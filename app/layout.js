@@ -19,11 +19,11 @@ export default function RootLayout({ children }) {
       <body>
         <header><div className="bar">
           <Link className="logo" href="/"><i>T</i>ToolBoxFree</Link>
-          <Nav links={tools.slice(0, 6).map((t) => ({ href: `/tools/${t.slug}/`, name: t.name }))} />
+          <Nav links={[...tools.slice(0, 6).map((t) => ({ href: `/tools/${t.slug}/`, name: t.name })), { href: '/blog/', name: 'Blog' }]} />
         </div></header>
         <main>{children}</main>
         <footer>
-          <Link href="/about/">About</Link><Link href="/contact/">Contact</Link><Link href="/privacy-policy/">Privacy Policy</Link><Link href="/terms/">Terms</Link>
+          <Link href="/blog/">Blog</Link><Link href="/about/">About</Link><Link href="/contact/">Contact</Link><Link href="/privacy-policy/">Privacy Policy</Link><Link href="/terms/">Terms</Link>
           <div style={{ marginTop: 8 }}>&copy; {new Date().getFullYear()} ToolBoxFree</div>
         </footer>
       </body>
