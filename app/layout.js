@@ -1,6 +1,7 @@
 import './globals.css';
 import Link from 'next/link';
 import { tools, SITE } from '../lib/tools';
+import Nav from '../components/Nav';
 
 export const metadata = {
   metadataBase: new URL(SITE),
@@ -18,7 +19,7 @@ export default function RootLayout({ children }) {
       <body>
         <header><div className="bar">
           <Link className="logo" href="/"><i>T</i>ToolBoxFree</Link>
-          <nav>{tools.slice(0, 6).map((t) => <Link key={t.slug} href={`/tools/${t.slug}/`}>{t.name}</Link>)}</nav>
+          <Nav links={tools.slice(0, 6).map((t) => ({ href: `/tools/${t.slug}/`, name: t.name }))} />
         </div></header>
         <main>{children}</main>
         <footer>
