@@ -5,7 +5,7 @@ import Nav from '../components/Nav';
 
 export const metadata = {
   metadataBase: new URL(SITE),
-  title: { default: 'ToolBoxFree - Free Online PDF, Word, Excel and Image Tools', template: '%s | ToolBoxFree' },
+  title: { default: 'DocBrio - Free Online PDF, Word, Excel and Image Tools', template: '%s | DocBrio' },
   description: 'Free online tools: PDF to Word, PDF to Excel, Word to PDF, merge PDF, compress images, QR codes and more. No signup. Files stay in your browser.',
 };
 
@@ -18,13 +18,13 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <header><div className="bar">
-          <Link className="logo" href="/"><i>T</i>ToolBoxFree</Link>
+          <Link className="logo" href="/"><i>D</i>DocBrio</Link>
           <Nav links={[...tools.slice(0, 6).map((t) => ({ href: `/tools/${t.slug}/`, name: t.name })), { href: '/blog/', name: 'Blog' }]} />
         </div></header>
         <main>{children}</main>
         <footer>
           <Link href="/blog/">Blog</Link><Link href="/about/">About</Link><Link href="/contact/">Contact</Link><Link href="/privacy-policy/">Privacy Policy</Link><Link href="/terms/">Terms</Link>
-          <div style={{ marginTop: 8 }}>&copy; {new Date().getFullYear()} ToolBoxFree</div>
+          <div style={{ marginTop: 8 }}>&copy; {new Date().getFullYear()} DocBrio</div>
         </footer>
       </body>
     </html>
