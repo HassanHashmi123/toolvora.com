@@ -1,70 +1,8 @@
 'use client';
-import { useEffect, useState } from 'react';
-
-const CDN = 'https://cdnjs.cloudflare.com/ajax/libs/';
-const LIBS = {
-  pdflib: [CDN + 'pdf-lib/1.17.1/pdf-lib.min.js', 'PDFLib'],
-  pdfjs: [CDN + 'pdf.js/3.11.174/pdf.min.js', 'pdfjsLib'],
-  xlsx: [CDN + 'xlsx/0.18.5/xlsx.full.min.js', 'XLSX'],
-  mammoth: [CDN + 'mammoth/1.6.0/mammoth.browser.min.js', 'mammoth'],
-  html2pdf: [CDN + 'html2pdf.js/0.10.1/html2pdf.bundle.min.js', 'html2pdf'],
-  qr: [CDN + 'qrcode-generator/1.4.4/qrcode.min.js', 'qrcode'],
-  tesseract: ['https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js', 'Tesseract'],
-};
-const pending = {};
-function lib(name) {
-  const [src, g] = LIBS[name];
-  if (window[g]) return Promise.resolve(window[g]);
-  if (!pending[name]) pending[name] = new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = () => res(window[g]); s.onerror = () => rej(new Error('Could not load tool library. Check your internet connection.'));
-    document.head.appendChild(s);
-  });
-  return pending[name];
-}
-const mk = (blob, name) => ({ url: URL.createObjectURL(blob), name });
-const base = (f) => f.name.replace(/\.[^.]+$/, '');
-const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-function useRun(fn) {
-  const [st, setSt] = useState({});
-  const run = async () => {
-    setSt({ msg: 'Working...' });
-    try { setSt(await fn((msg) => setSt({ msg }))); } catch (e) { setSt({ msg: e.message || 'Something went wrong.' }); }
-  };
-  return [st, run];
-}
-function Drop({ accept, multiple, files, setFiles, label }) {
-  const [over, setOver] = useState(false);
-  // A file dropped outside the box would make the browser open it and leave the site
-  useEffect(() => {
-    const stop = (e) => e.preventDefault();
-    window.addEventListener('dragover', stop); window.addEventListener('drop', stop);
-    return () => { window.removeEventListener('dragover', stop); window.removeEventListener('drop', stop); };
-  }, []);
-  const drop = (e) => {
-    e.preventDefault(); setOver(false);
-    const list = [...e.dataTransfer.files];
-    if (list.length) setFiles(multiple ? list : list.slice(0, 1));
-  };
-  return (
-    <label className={over ? 'drop over' : 'drop'} onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={drop}>
-      <input type="file" accept={accept} multiple={multiple} onChange={(e) => setFiles([...e.target.files])} />
-      <b>{label}</b>
-      <span>{files.length ? files.map((f) => f.name).join(', ') : 'Click to choose a file, or drag it here'}</span>
-    </label>
-  );
-}
-function Out({ st }) {
-  return (
-    <div className="out" aria-live="polite">
-      {st.msg && <p>{st.msg}</p>}
-      {st.file && <a className="btn" href={st.file.url} download={st.file.name}>Download {st.file.name}</a>}
-      {st.img && <img className="prev" src={st.img} alt="Result preview" />}
-    </div>
-  );
-}
-const NOTE = (t) => <div className="note">{t}</div>;
+import { useState } from 'react';
+import { lib, mk, base, esc, useRun, Drop, Out, NOTE, openPdf } from './shared';
+import { PptToPdf, PdfToPpt } from './Slides';
+import { EditPdf, SignPdf, CropPdf } from './PdfEditor';
 
 // items: { s, x, y, w } in PDF points (y grows upwards) -> lines of items, top to bottom, left to right
 function toLines(items, tol) {
@@ -90,11 +28,7 @@ async function ocrPage(page, getWorker) {
 }
 
 async function readPdf(file, say = () => {}) {
-  const pdfjs = await lib('pdfjs');
-  pdfjs.GlobalWorkerOptions.workerSrc = CDN + 'pdf.js/3.11.174/pdf.worker.min.js';
-  let pdf;
-  try { pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise; }
-  catch { throw new Error('Could not open this PDF. It may be password-protected or damaged.'); }
+  const pdf = await openPdf(file);
   let worker = null;
   const getWorker = () => (worker ||= lib('tesseract').then((T) => T.createWorker('eng')));
   const pages = [];
@@ -112,22 +46,34 @@ async function readPdf(file, say = () => {}) {
   return pages;
 }
 
+// A real .docx (zip of XML). HTML saved as .doc opens in desktop Word but fails in phone apps and viewers
+const DOCX_TYPES = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
+const DOCX_RELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+async function makeDocx(pages) {
+  const Z = await lib('jszip');
+  // Characters XML does not allow would make Word reject the whole file
+  const clean = (t) => esc(t.replace(/[^\t\n\r\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu, ''));
+  const body = pages.map((ps) => ps.map((t) => `<w:p><w:r><w:t xml:space="preserve">${clean(t)}</w:t></w:r></w:p>`).join(''))
+    .join('<w:p><w:r><w:br w:type="page"/></w:r></w:p>');
+  const z = new Z();
+  z.file('[Content_Types].xml', DOCX_TYPES);
+  z.file('_rels/.rels', DOCX_RELS);
+  z.file('word/document.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`);
+  return z.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', compression: 'DEFLATE' });
+}
+const NO_TEXT = 'No text found. The pages of this PDF are blank, so there is nothing to convert. Open the PDF to check it, or try another file.';
+
 function PdfToWord() {
   const [files, setFiles] = useState([]);
   const [st, run] = useRun(async (say) => {
     if (!files[0]) return { msg: 'Please choose a PDF first.' };
-    const pages = await readPdf(files[0], say); let h = '', n = 0;
-    pages.forEach((lines, i) => {
-      lines.forEach((l) => {
-        let t = '', p = null;
-        l.its.forEach((it) => { if (p && it.x - (p.x + p.w) > 1.5) t += ' '; t += it.s; p = it; });
-        if (t) { h += `<p>${esc(t)}</p>`; n++; }
-      });
-      if (i < pages.length - 1) h += '<br clear=all style="page-break-before:always">';
-    });
-    if (!n) return { msg: 'No text found in this PDF.' };
-    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"></head><body>${h}</body></html>`;
-    return { file: mk(new Blob(['\ufeff', html], { type: 'application/msword' }), base(files[0]) + '.doc') };
+    const pages = (await readPdf(files[0], say)).map((lines) => lines.map((l) => {
+      let t = '', p = null;
+      l.its.forEach((it) => { if (p && it.x - (p.x + p.w) > 1.5) t += ' '; t += it.s; p = it; });
+      return t;
+    }).filter((t) => t.trim()));
+    if (!pages.some((ps) => ps.length)) return { msg: NO_TEXT };
+    return { file: mk(await makeDocx(pages), base(files[0]) + '.docx') };
   });
   return <><Drop accept=".pdf,application/pdf" files={files} setFiles={setFiles} label="Choose a PDF file" /><button className="btn" onClick={run}>Convert to Word</button><Out st={st} />{NOTE('Text is extracted. Complex layouts, images and tables may not be preserved. Scanned or image-only PDFs are read with OCR (English), which is slower and may contain small mistakes.')}</>;
 }
@@ -152,7 +98,7 @@ function PdfToExcel() {
       });
       if (rows.length) X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(rows), 'Page ' + (i + 1));
     });
-    if (!n) return { msg: 'No text found in this PDF.' };
+    if (!n) return { msg: NO_TEXT };
     const arr = X.write(wb, { bookType: 'xlsx', type: 'array' });
     return { file: mk(new Blob([arr], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), base(files[0]) + '.xlsx') };
   });
@@ -205,15 +151,24 @@ function ImageCompressor() {
     const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
     const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0);
     const b = await new Promise((r) => c.toBlob(r, 'image/jpeg', q / 100));
+    if (!b) return { msg: 'This image is too large for your browser to process. Try a smaller image.' };
+    if (b.size >= f.size) return { msg: `This image is already small (${(f.size / 1024).toFixed(0)} KB) and would not get smaller at ${q}% quality. Try a lower quality.` };
     return { msg: `Before: ${(f.size / 1024).toFixed(0)} KB  ->  After: ${(b.size / 1024).toFixed(0)} KB`, file: mk(b, base(f) + '-compressed.jpg'), img: URL.createObjectURL(b) };
   });
   return <><Drop accept="image/*" files={files} setFiles={setFiles} label="Choose an image" /><div className="row"><label htmlFor="q">Quality: <b>{q}</b>%</label><input id="q" type="range" min="20" max="95" value={q} onChange={(e) => setQ(+e.target.value)} /></div><button className="btn" onClick={run}>Compress</button><Out st={st} /></>;
 }
 
 function QrGen() {
-  const [t, setT] = useState(''); const [url, setUrl] = useState('');
-  const gen = async () => { if (!t.trim()) return; const q = (await lib('qr'))(0, 'M'); q.addData(t.trim()); q.make(); setUrl(q.createDataURL(8, 4)); };
+  const [t, setT] = useState(''); const [url, setUrl] = useState(''); const [err, setErr] = useState('');
+  const gen = async () => {
+    if (!t.trim()) return setErr('Type a link or some text first.');
+    setErr('');
+    try { const q = (await lib('qr'))(0, 'M'); q.addData(unescape(encodeURIComponent(t.trim()))); q.make(); setUrl(q.createDataURL(8, 4)); }
+    // qrcode-generator throws when the text does not fit in the largest QR size
+    catch (e) { setUrl(''); setErr(/internet/.test(e.message) ? e.message : 'This text is too long for a QR code. Use a shorter link or text.'); }
+  };
   return <><input type="text" value={t} onChange={(e) => setT(e.target.value)} placeholder="https://example.com" aria-label="Link or text" /><button className="btn" onClick={gen}>Generate QR</button>
+    {err && <div className="out" aria-live="polite"><p>{err}</p></div>}
     {url && <div className="out"><img src={url} alt="QR code" width="220" /><br /><a className="btn" href={url} download="qr-code.png">Download PNG</a></div>}</>;
 }
 
@@ -248,5 +203,6 @@ function PasswordGen() {
 }
 
 const MAP = { 'pdf-to-word': PdfToWord, 'pdf-to-excel': PdfToExcel, 'word-to-pdf': WordToPdf, 'merge-pdf': MergePdf,
-  'image-compressor': ImageCompressor, 'qr-code-generator': QrGen, 'word-counter': WordCounter, 'case-converter': CaseConverter, 'password-generator': PasswordGen };
+  'image-compressor': ImageCompressor, 'qr-code-generator': QrGen, 'word-counter': WordCounter, 'case-converter': CaseConverter, 'password-generator': PasswordGen,
+  'powerpoint-to-pdf': PptToPdf, 'pdf-to-powerpoint': PdfToPpt, 'edit-pdf': EditPdf, 'sign-pdf': SignPdf, 'crop-pdf': CropPdf };
 export default function ToolClient({ slug }) { const C = MAP[slug]; return <C />; }
