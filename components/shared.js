@@ -52,9 +52,11 @@ export function Drop({ accept, multiple, files, setFiles, label }) {
   };
   return (
     <label className={over ? 'drop over' : 'drop'} onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={drop}>
-      <input type="file" accept={accept} multiple={multiple} onChange={(e) => setFiles([...e.target.files])} />
+      <input type="file" accept={accept} multiple={multiple} onChange={(e) => setFiles([...e.target.files])}
+        // Cleared on every open, so choosing the same file again still counts as a new choice
+        onClick={(e) => { e.target.value = ''; }} />
       <b>{label}</b>
-      <span>{files.length ? files.map((f) => f.name).join(', ') : 'Click to choose a file, or drag it here'}</span>
+      <span>{files.length ? files.map((f) => f.name).join(', ') : 'Tap or click here to choose a file'}</span>
     </label>
   );
 }
