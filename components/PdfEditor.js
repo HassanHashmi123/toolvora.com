@@ -4,7 +4,7 @@ import { lib, mk, base, useRun, Drop, Out, NOTE, openPdf } from './shared';
 
 const TEXT_FONT = 'Helvetica, Arial, sans-serif';
 const BASELINE = 0.95; // baseline of a line of text, as a share of the font size below the top of its 1.2 line box
-const LOCKED = 'This PDF is password-protected or damaged, so it cannot be changed.';
+const LOCKED = 'This PDF is password protected or damaged, so it cannot be changed.';
 
 function usePdf(files) {
   const [pdf, setPdf] = useState(null), [msg, setMsg] = useState(''), [pageNo, setPageNo] = useState(1), [vp, setVp] = useState(null);
@@ -178,7 +178,7 @@ function Editor({ sign }) {
         page.drawImage(await doc.embedPng(c.toDataURL('image/png')), { x: ax, y: ay, width: w, height: el.size * 1.2, rotate });
       }
     }
-    return { file: mk(new Blob([await doc.save()], { type: 'application/pdf' }), base(files[0]) + (sign ? '-signed.pdf' : '-edited.pdf')) };
+    return { file: mk(new Blob([await doc.save()], { type: 'application/pdf' }), base(files[0]) + (sign ? '_signed.pdf' : '_edited.pdf')) };
   });
 
   const tools = sign ? [['sign', 'Signature'], ['text', 'Text / date']] : [['text', 'Text'], ['white', 'Whiteout'], ['draw', 'Draw']];
@@ -252,7 +252,7 @@ export function CropPdf() {
       // Every box is set, because viewers and printers do not agree on which one they follow
       page.setMediaBox(...r); page.setCropBox(...r); page.setBleedBox(...r); page.setTrimBox(...r); page.setArtBox(...r);
     }
-    return { file: mk(new Blob([await doc.save()], { type: 'application/pdf' }), base(files[0]) + '-cropped.pdf') };
+    return { file: mk(new Blob([await doc.save()], { type: 'application/pdf' }), base(files[0]) + '_cropped.pdf') };
   });
   return (
     <>

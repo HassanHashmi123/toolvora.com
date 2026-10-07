@@ -15,7 +15,9 @@ export function PdfToPpt() {
   const [files, setFiles] = useState([]);
   const [st, run] = useRun(async (say) => {
     if (!files[0]) return { msg: 'Please choose a PDF first.' };
-    const pdf = await openPdf(files[0]); const P = await lib('pptx');
+    const pdf = await openPdf(files[0]);
+    await lib('jszip');
+    const P = await lib('pptx');
     const pptx = new P(); let W, H;
     for (let n = 1; n <= pdf.numPages; n++) {
       say(`Converting page ${n} of ${pdf.numPages}...`);
@@ -337,8 +339,9 @@ async function pptToPdf(file, say) {
     await drawTree(tree(layout), S, lr, root, true);
     await drawTree(tree(slide), S, sr, root, false);
     const jpg = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.92));
+    if (!jpg) throw new Error('Could not render slide image.');
     out.addPage([W, H]).drawImage(await out.embedJpg(await jpg.arrayBuffer()), { x: 0, y: 0, width: W, height: H });
-    c.width = 0;
+    c.width = 0; c.height = 0;
   }
   return new Blob([await out.save()], { type: 'application/pdf' });
 }

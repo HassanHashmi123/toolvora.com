@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { lib, base, useRun, Drop, Out, NOTE } from './shared';
+import { lib, base, formatBytes, useRun, Drop, Out, NOTE } from './shared';
 
 // q: default quality for formats that lose detail. Phones hide files of types they do not know, so ICO and AVIF accept any image
 const F = {
@@ -13,7 +13,7 @@ const F = {
 const ICO_SIZES = [16, 24, 32, 48, 64, 128, 256];
 // Encoders no browser has built in (AVIF everywhere, WebP in Safari). Loaded only when such a file is actually made
 const WASM = { avif: 'https://unpkg.com/@jsquash/avif@2.1.1/encode.js?module', webp: 'https://unpkg.com/@jsquash/webp@1.5.0/encode.js?module' };
-const kb = (n) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);
+const kb = (n) => formatBytes(n);
 
 const loadImg = (blob) => new Promise((res, rej) => {
   const i = new Image(), url = URL.createObjectURL(blob);
@@ -104,7 +104,7 @@ export function ImgConvert({ from, to }) {
       say(`Converting ${files.length > 1 ? `image ${i + 1} of ${files.length}` : 'your image'}...${to === 'avif' ? ' AVIF takes a few seconds per image.' : ''}`);
       try {
         const blob = await convert(f, from, to, q);
-        let name = base(f); if (used[name]) name += `-${++used[name]}`; else used[name] = 1;
+        let name = base(f); if (used[name]) name += `_${++used[name]}`; else used[name] = 1;
         done.push({ name: `${name}.${to}`, url: URL.createObjectURL(blob), blob, before: f.size });
         setRes([...done]);
       } catch (e) { bad.push(/^(could|is) /.test(e.message) ? `${f.name} ${e.message}` : e.message); }
@@ -114,7 +114,7 @@ export function ImgConvert({ from, to }) {
   });
   const [zs, zip] = useRun(async () => {
     const z = new (await lib('jszip'))(); res.forEach((r) => z.file(r.name, r.blob));
-    const a = document.createElement('a'); a.href = URL.createObjectURL(await z.generateAsync({ type: 'blob' })); a.download = `${from}-to-${to}.zip`; a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(await z.generateAsync({ type: 'blob' })); a.download = `${from}_to_${to}.zip`; a.click();
     return {};
   });
   const note = { jpg: 'JPG has no transparency, so transparent areas become white.',

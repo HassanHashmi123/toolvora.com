@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { lib, mk, base, esc, useRun, Drop, Out, NOTE, openPdf } from './shared';
 import { PptToPdf, PdfToPpt } from './Slides';
 import { EditPdf, SignPdf, CropPdf } from './PdfEditor';
@@ -70,13 +70,17 @@ function PdfToWord() {
     if (!files[0]) return { msg: 'Please choose a PDF first.' };
     const pages = (await readPdf(files[0], say)).map((lines) => lines.map((l) => {
       let t = '', p = null;
-      l.its.forEach((it) => { if (p && it.x - (p.x + p.w) > 1.5) t += ' '; t += it.s; p = it; });
+      l.its.forEach((it) => {
+        if (p && it.x - (p.x + p.w) > 1.5 && !t.endsWith(' ') && !it.s.startsWith(' ')) t += ' ';
+        t += it.s;
+        p = it;
+      });
       return t;
     }).filter((t) => t.trim()));
     if (!pages.some((ps) => ps.length)) return { msg: NO_TEXT };
     return { file: mk(await makeDocx(pages), base(files[0]) + '.docx') };
   });
-  return <><Drop accept=".pdf,application/pdf" files={files} setFiles={setFiles} label="Choose a PDF file" /><button className="btn" onClick={run}>Convert to Word</button><Out st={st} />{NOTE('Text is extracted. Complex layouts, images and tables may not be preserved. Scanned or image-only PDFs are read with OCR (English), which is slower and may contain small mistakes.')}</>;
+  return <><Drop accept=".pdf,application/pdf" files={files} setFiles={setFiles} label="Choose a PDF file" /><button className="btn" onClick={run}>Convert to Word</button><Out st={st} />{NOTE('Text is extracted. Complex layouts, images and tables may not be preserved. Scanned or image only PDFs are read with OCR (English), which is slower and may contain small mistakes.')}</>;
 }
 
 function PdfToExcel() {
@@ -90,12 +94,20 @@ function PdfToExcel() {
         const cells = []; let c = '', p = null;
         l.its.forEach((it) => {
           const gap = p ? it.x - (p.x + p.w) : 0;
-          if (p && gap > 12) { cells.push(c); c = it.s; } else c += (p && gap > 1.5 ? ' ' : '') + it.s;
+          if (p && gap > 12) { cells.push(c.trim()); c = it.s; }
+          else c += (p && gap > 1.5 && !c.endsWith(' ') && !it.s.startsWith(' ') ? ' ' : '') + it.s;
           p = it;
         });
-        cells.push(c); n += cells.length;
-        // "9,500" -> 9500 so Excel can sum it; keep leading-zero values (phone numbers, IDs) as text
-        return cells.map((v) => (/^-?(0|[1-9][\d,]*)(\.\d+)?$/.test(v.trim()) ? +v.replace(/,/g, '') : v));
+        cells.push(c.trim());
+        n += cells.filter(Boolean).length;
+        // Keep leading zero values as text, and avoid float overflow for 16+ digit numbers
+        return cells.map((v) => {
+          const trimmed = v.trim();
+          if (/^-?(0|[1-9][\d,]*)(\.\d+)?$/.test(trimmed) && trimmed.replace(/,/g, '').length <= 15) {
+            return +trimmed.replace(/,/g, '');
+          }
+          return v;
+        });
       });
       if (rows.length) X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(rows), 'Page ' + (i + 1));
     });
@@ -115,12 +127,12 @@ function WordToPdf() {
     const m = await lib('mammoth'); const h = await lib('html2pdf');
     const r = await m.convertToHtml({ arrayBuffer: await f.arrayBuffer() });
     if (!r.value.trim()) return { msg: 'This document looks empty. Nothing to convert.' };
-    // Hide the wrapper, not d: html2pdf clones d with its inline styles, so an off-screen d renders a blank PDF
+    // Hide wrapper off-screen
     const wrap = document.createElement('div');
     wrap.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;overflow:hidden';
     const d = document.createElement('div');
-    d.style.cssText = 'width:700px;padding:10px;background:#fff;color:#000;font:14px/1.6 Arial,sans-serif';
-    d.innerHTML = '<style>table{border-collapse:collapse}td,th{border:1px solid #999;padding:4px}img{max-width:100%}</style>' + r.value;
+    d.style.cssText = 'width:700px;padding:12px;background:#fff;color:#000;font:14px/1.6 Arial,sans-serif';
+    d.innerHTML = '<style>table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}img{max-width:100%;height:auto}h1,h2,h3{margin:16px 0 8px}p{margin:8px 0}</style>' + r.value;
     wrap.appendChild(d); document.body.appendChild(wrap);
     try {
       const blob = await h().set({ margin: 12, html2canvas: { scale: 2, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(d).outputPdf('blob');
@@ -136,25 +148,37 @@ function MergePdf() {
     if (files.length < 2) return { msg: 'Choose at least 2 PDF files.' };
     const P = await lib('pdflib'); const out = await P.PDFDocument.create();
     for (const f of files) {
-      let d; try { d = await P.PDFDocument.load(await f.arrayBuffer()); } catch { return { msg: f.name + ' is damaged or password-protected.' }; }
+      let d; try { d = await P.PDFDocument.load(await f.arrayBuffer()); } catch { return { msg: f.name + ' is damaged or password protected.' }; }
       (await out.copyPages(d, d.getPageIndices())).forEach((p) => out.addPage(p));
     }
     return { file: mk(new Blob([await out.save()], { type: 'application/pdf' }), 'merged.pdf') };
   });
-  return <><Drop accept="application/pdf" multiple files={files} setFiles={setFiles} label="Choose 2 or more PDF files" /><button className="btn" onClick={run}>Merge PDFs</button><Out st={st} /></>;
+  return <><Drop accept=".pdf,application/pdf" multiple files={files} setFiles={setFiles} label="Choose 2 or more PDF files" /><button className="btn" onClick={run}>Merge PDFs</button><Out st={st} /></>;
 }
 
 function ImageCompressor() {
   const [files, setFiles] = useState([]); const [q, setQ] = useState(70);
   const [st, run] = useRun(async () => {
     const f = files[0]; if (!f) return { msg: 'Please choose an image first.' };
-    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('This file is not a valid image.')); i.src = URL.createObjectURL(f); });
+    const img = await new Promise((res, rej) => {
+      const i = new Image();
+      const u = URL.createObjectURL(f);
+      i.onload = () => { URL.revokeObjectURL(u); res(i); };
+      i.onerror = () => { URL.revokeObjectURL(u); rej(new Error('This file is not a valid image.')); };
+      i.src = u;
+    });
     const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
     const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0);
     const b = await new Promise((r) => c.toBlob(r, 'image/jpeg', q / 100));
+    c.width = 0; c.height = 0;
     if (!b) return { msg: 'This image is too large for your browser to process. Try a smaller image.' };
-    if (b.size >= f.size) return { msg: `This image is already small (${(f.size / 1024).toFixed(0)} KB) and would not get smaller at ${q}% quality. Try a lower quality.` };
-    return { msg: `Before: ${(f.size / 1024).toFixed(0)} KB  ->  After: ${(b.size / 1024).toFixed(0)} KB`, file: mk(b, base(f) + '-compressed.jpg'), img: URL.createObjectURL(b) };
+    const saved = f.size > b.size ? ` (reduced by ${Math.round((1 - b.size / f.size) * 100)}%)` : '';
+    const note = b.size >= f.size ? ' Try a lower quality slider value to reduce the file size further.' : '';
+    return {
+      msg: `Before: ${(f.size / 1024).toFixed(0)} KB  →  After: ${(b.size / 1024).toFixed(0)} KB${saved}.${note}`,
+      file: mk(b, base(f) + '_compressed.jpg'),
+      img: URL.createObjectURL(b)
+    };
   });
   return <><Drop accept="image/*" files={files} setFiles={setFiles} label="Choose an image" /><div className="row"><label htmlFor="q">Quality: <b>{q}</b>%</label><input id="q" type="range" min="20" max="95" value={q} onChange={(e) => setQ(+e.target.value)} /></div><button className="btn" onClick={run}>Compress</button><Out st={st} /></>;
 }
@@ -165,41 +189,61 @@ function QrGen() {
     if (!t.trim()) return setErr('Type a link or some text first.');
     setErr('');
     try { const q = (await lib('qr'))(0, 'M'); q.addData(unescape(encodeURIComponent(t.trim()))); q.make(); setUrl(q.createDataURL(8, 4)); }
-    // qrcode-generator throws when the text does not fit in the largest QR size
     catch (e) { setUrl(''); setErr(/internet/.test(e.message) ? e.message : 'This text is too long for a QR code. Use a shorter link or text.'); }
   };
   return <><input type="text" value={t} onChange={(e) => setT(e.target.value)} placeholder="https://example.com" aria-label="Link or text" /><button className="btn" onClick={gen}>Generate QR</button>
     {err && <div className="out" aria-live="polite"><p>{err}</p></div>}
-    {url && <div className="out"><img src={url} alt="QR code" width="220" /><br /><a className="btn" href={url} download="qr-code.png">Download PNG</a></div>}</>;
+    {url && <div className="out"><img src={url} alt="QR code" width="220" /><br /><a className="btn" href={url} download="qrcode.png">Download PNG</a></div>}</>;
 }
 
 function WordCounter() {
   const [v, setV] = useState(''); const t = v.trim(); const w = t ? t.split(/\s+/).length : 0;
-  const s = t ? (t.match(/[.!?\u06D4]+/g) || [t]).length : 0;
+  const s = t ? (t.match(/([.!?\u06D4]+|\n+)/g) || [t]).length : 0;
   return <><textarea value={v} onChange={(e) => setV(e.target.value)} placeholder="Paste or type your text here..." aria-label="Text" />
     <div className="stats"><div><b>{w}</b>Words</div><div><b>{v.length}</b>Characters</div><div><b>{s}</b>Sentences</div><div><b>{w ? Math.max(1, Math.round(w / 200)) : 0}</b>Min read</div></div></>;
 }
 
 function CaseConverter() {
   const [v, setV] = useState('');
-  const f = { u: (s) => s.toUpperCase(), l: (s) => s.toLowerCase(),
+  const [copied, setCopied] = useState(false);
+  const f = {
+    u: (s) => s.toUpperCase(),
+    l: (s) => s.toLowerCase(),
     t: (s) => s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()),
-    s: (s) => s.toLowerCase().replace(/(^\s*|[.!?]\s+)([a-z])/g, (a, b, c) => b + c.toUpperCase()) };
+    s: (s) => s.toLowerCase().replace(/(^\s*|[.!?\n]\s*)([a-z])/g, (a, b, c) => b + c.toUpperCase())
+  };
+  const copy = () => {
+    if (!v) return;
+    navigator.clipboard.writeText(v);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
   return <><textarea value={v} onChange={(e) => setV(e.target.value)} placeholder="Type or paste text..." aria-label="Text" />
     <button className="btn" onClick={() => setV(f.u(v))}>UPPERCASE</button><button className="btn" onClick={() => setV(f.l(v))}>lowercase</button>
     <button className="btn" onClick={() => setV(f.t(v))}>Title Case</button><button className="btn" onClick={() => setV(f.s(v))}>Sentence case</button>
-    <button className="btn alt" onClick={() => navigator.clipboard.writeText(v)}>Copy</button></>;
+    <button className="btn alt" onClick={copy}>{copied ? 'Copied!' : 'Copy'}</button></>;
 }
 
 function PasswordGen() {
-  const [len, setLen] = useState(16), [num, setNum] = useState(true), [sym, setSym] = useState(true), [pw, setPw] = useState('');
+  const [len, setLen] = useState(16), [num, setNum] = useState(true), [sym, setSym] = useState(true), [pw, setPw] = useState(''), [copied, setCopied] = useState(false);
   const gen = () => {
-    let s = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'; if (num) s += '23456789'; if (sym) s += '!@#$%^&*-_?';
-    const r = new Uint32Array(len); crypto.getRandomValues(r); setPw([...r].map((n) => s[n % s.length]).join(''));
+    let s = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
+    if (num) s += '23456789';
+    if (sym) s += '!@#$%^&*+=?';
+    const r = new Uint32Array(len);
+    crypto.getRandomValues(r);
+    setPw([...r].map((n) => s[n % s.length]).join(''));
+  };
+  useEffect(() => { gen(); }, []);
+  const copy = () => {
+    if (!pw) return;
+    navigator.clipboard.writeText(pw);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
   return <><div className="row"><label htmlFor="pl">Length: <b>{len}</b></label><input id="pl" type="range" min="8" max="40" value={len} onChange={(e) => setLen(+e.target.value)} /></div>
     <div className="row"><label><input type="checkbox" checked={num} onChange={(e) => setNum(e.target.checked)} /> Numbers</label><label><input type="checkbox" checked={sym} onChange={(e) => setSym(e.target.checked)} /> Symbols</label></div>
-    <button className="btn" onClick={gen}>Generate</button><button className="btn alt" onClick={() => pw && navigator.clipboard.writeText(pw)}>Copy</button>
+    <button className="btn" onClick={gen}>Generate</button><button className="btn alt" onClick={copy}>{copied ? 'Copied!' : 'Copy'}</button>
     <input type="text" readOnly value={pw} aria-label="Generated password" style={{ marginTop: 14, fontFamily: 'Consolas, monospace' }} /></>;
 }
 
