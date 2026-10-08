@@ -38,10 +38,11 @@ function getRecommendations(currentTool) {
     'powerpoint-to-pdf': ['pdf-to-powerpoint', 'word-to-pdf', 'pdf-to-word', 'merge-pdf'],
     'pdf-to-powerpoint': ['powerpoint-to-pdf', 'pdf-to-word', 'pdf-to-excel', 'merge-pdf'],
     'image-compressor': ['png-to-webp', 'webp-to-jpg', 'png-to-ico', 'jpg-to-png'],
-    'qr-code-generator': ['password-generator', 'word-counter', 'case-converter', 'image-compressor'],
-    'password-generator': ['qr-code-generator', 'word-counter', 'case-converter', 'image-compressor'],
-    'word-counter': ['case-converter', 'password-generator', 'qr-code-generator', 'pdf-to-word'],
-    'case-converter': ['word-counter', 'password-generator', 'qr-code-generator', 'pdf-to-word'],
+    'qr-code-generator': ['password-generator', 'email-verifier', 'word-counter', 'case-converter'],
+    'password-generator': ['email-verifier', 'qr-code-generator', 'word-counter', 'case-converter'],
+    'email-verifier': ['password-generator', 'qr-code-generator', 'word-counter', 'case-converter'],
+    'word-counter': ['case-converter', 'email-verifier', 'password-generator', 'qr-code-generator'],
+    'case-converter': ['word-counter', 'email-verifier', 'password-generator', 'qr-code-generator'],
   };
 
   if (curatedMap[slug]) {

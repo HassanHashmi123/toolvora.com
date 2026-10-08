@@ -202,6 +202,7 @@ export default function Nav() {
       items: [
         { name: 'QR Code Generator', slug: 'qr-code-generator', desc: 'Generate high res scannable QR PNG' },
         { name: 'Password Generator', slug: 'password-generator', desc: 'Cryptographic secure passwords' },
+        { name: 'Email Verifier', slug: 'email-verifier', desc: 'Verify email, extract name & domain' },
         { name: 'Word Counter', slug: 'word-counter', desc: 'Words, characters & reading time' },
         { name: 'Case Converter', slug: 'case-converter', desc: 'Uppercase, lowercase, title case' },
       ],
@@ -271,14 +272,14 @@ export default function Nav() {
               <div className="mega-bottom-bar">
                 <div className="mega-bottom-info">
                   <span className="dot-pulse" />
-                  <span>26+ In Browser Tools • 100% Client Side Privacy • Zero Server Uploads</span>
+                  <span>27+ In Browser Tools • 100% Client Side Privacy • Zero Server Uploads</span>
                 </div>
                 <Link
                   href="/#tools-section"
                   className="mega-all-link"
                   onClick={(e) => handleNavScroll(e, 'tools-section')}
                 >
-                  <span>View All 26 Tools Directory</span>
+                  <span>View All 27 Tools Directory</span>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
@@ -396,9 +397,13 @@ export default function Nav() {
             if (e.target === e.currentTarget) setMobileOpen(false);
           }}
         >
-          <div className="mobile-drawer-panel">
+          <div className="mobile-drawer-panel" role="dialog" aria-modal="true" aria-label="DocBrio Mobile Menu">
+            {/* Pinned Top Header */}
             <div className="mobile-drawer-header">
-              <div className="mobile-drawer-title">Browse DocBrio Suite</div>
+              <div className="mobile-drawer-brand">
+                <div className="mobile-drawer-title">Browse DocBrio Suite</div>
+                <div className="mobile-drawer-subtitle">27 Tools • 100% Client Side Privacy</div>
+              </div>
               <button
                 type="button"
                 className="mobile-close-btn"
@@ -412,67 +417,96 @@ export default function Nav() {
               </button>
             </div>
 
-            {/* Mobile Search Button */}
-            <button
-              type="button"
-              onClick={handleQuickSearch}
-              className="mobile-search-btn"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <span>Search any document or image tool...</span>
-            </button>
+            {/* Scrollable Body: Single Unified Scroll Container */}
+            <div className="mobile-drawer-body">
+              {/* Mobile Quick Search Action */}
+              <button
+                type="button"
+                onClick={handleQuickSearch}
+                className="mobile-search-btn"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <span>Search any document or image tool...</span>
+              </button>
 
-            {/* Category Filter Tabs inside Mobile Menu */}
-            <div className="mobile-tabs-row">
-              {toolCategories.map((c) => (
-                <button
-                  key={c.id}
-                  className={`mobile-tab-btn ${mobileTab === c.id ? 'active' : ''}`}
-                  onClick={() => setMobileTab(c.id)}
-                >
-                  {c.name}
-                </button>
-              ))}
+              {/* Category Filter Grid inside Mobile Menu (Strictly contained, 0% overflow) */}
+              <div className="mobile-tools-section">
+                <div className="mobile-section-label">Browse by Category</div>
+                <div className="mobile-category-grid">
+                  {toolCategories.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`mobile-cat-card ${mobileTab === c.id ? 'active' : ''}`}
+                      onClick={() => setMobileTab(c.id)}
+                      aria-pressed={mobileTab === c.id}
+                    >
+                      <span className="mobile-cat-icon" style={{ background: c.bg }}>
+                        {c.icon}
+                      </span>
+                      <span className="mobile-cat-name">{c.name}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Selected Category Tools List */}
+                <div className="mobile-tools-list">
+                  {toolCategories
+                    .find((c) => c.id === mobileTab)
+                    ?.items.map((it, idx) => (
+                      <Link
+                        key={idx}
+                        href={`/tools/${it.slug}/`}
+                        className="mobile-tool-item"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <div className="mobile-tool-info">
+                          <b className="mobile-tool-name">{it.name}</b>
+                          <span className="mobile-tool-desc">{it.desc}</span>
+                        </div>
+                        <svg className="mobile-tool-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </Link>
+                    ))}
+                </div>
+              </div>
+
+              {/* General Site Links */}
+              <div className="mobile-drawer-links">
+                <div className="mobile-section-label">Site Navigation</div>
+                <Link href="/#tools-section" onClick={(e) => handleNavScroll(e, 'tools-section')}>
+                  <span>All Tools Directory</span>
+                  <span className="mobile-link-badge">27 Tools</span>
+                </Link>
+                <Link href="/#how-it-works" onClick={(e) => handleNavScroll(e, 'how-it-works')}>
+                  <span>How It Works</span>
+                </Link>
+                <Link href="/#why-docbrio" onClick={(e) => handleNavScroll(e, 'why-docbrio')}>
+                  <span>Why DocBrio</span>
+                </Link>
+                <Link href="/#vibeans-showcase" onClick={(e) => handleNavScroll(e, 'vibeans-showcase')}>
+                  <span>Vibeans Architecture</span>
+                </Link>
+                <Link href="/#faqs" onClick={(e) => handleNavScroll(e, 'faqs')}>
+                  <span>Frequently Asked Questions</span>
+                </Link>
+                <Link href="/blog/" onClick={() => setMobileOpen(false)}>
+                  <span>Guides & Tutorials</span>
+                </Link>
+                <Link href="/about/" onClick={() => setMobileOpen(false)}>
+                  <span>About Vibeans Solutions</span>
+                </Link>
+                <Link href="/contact/" onClick={() => setMobileOpen(false)}>
+                  <span>Contact & Support</span>
+                </Link>
+              </div>
             </div>
 
-            {/* Selected Category Tools List */}
-            <div className="mobile-tools-scroll">
-              {toolCategories
-                .find((c) => c.id === mobileTab)
-                ?.items.map((it, idx) => (
-                  <Link
-                    key={idx}
-                    href={`/tools/${it.slug}/`}
-                    className="mobile-tool-item"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <div>
-                      <b className="mobile-tool-name">{it.name}</b>
-                      <span className="mobile-tool-desc">{it.desc}</span>
-                    </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </Link>
-                ))}
-            </div>
-
-            {/* General Site Links */}
-            <div className="mobile-drawer-links">
-              <Link href="/#tools-section" onClick={(e) => handleNavScroll(e, 'tools-section')}>All Tools Directory</Link>
-              <Link href="/#how-it-works" onClick={(e) => handleNavScroll(e, 'how-it-works')}>How It Works</Link>
-              <Link href="/#why-docbrio" onClick={(e) => handleNavScroll(e, 'why-docbrio')}>Why DocBrio</Link>
-              <Link href="/#vibeans-showcase" onClick={(e) => handleNavScroll(e, 'vibeans-showcase')}>Vibeans Architecture</Link>
-              <Link href="/#faqs" onClick={(e) => handleNavScroll(e, 'faqs')}>Frequently Asked Questions</Link>
-              <Link href="/blog/" onClick={() => setMobileOpen(false)}>Guides & Tutorials</Link>
-              <Link href="/about/" onClick={() => setMobileOpen(false)}>About Vibeans Solutions</Link>
-              <Link href="/contact/" onClick={() => setMobileOpen(false)}>Contact & Support</Link>
-            </div>
-
-            {/* Bottom Actions */}
+            {/* Pinned Bottom Footer */}
             <div className="mobile-drawer-footer">
               <a
                 href="https://www.vibeanssolutions.site/"
@@ -482,6 +516,9 @@ export default function Nav() {
                 style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
               >
                 <span>Visit Vibeans Solutions</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 17l9.2-9.2M17 17V8H8" />
+                </svg>
               </a>
             </div>
           </div>

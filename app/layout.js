@@ -117,7 +117,7 @@ export default function RootLayout({ children }) {
               </div>
 
               {/* Column 2: Document & PDF Suite */}
-              <div className="footer-col">
+              <div className="footer-col footer-col-docs">
                 <h3 className="footer-col-title">Document Suite</h3>
                 <ul className="footer-links">
                   <li><Link href="/tools/pdf-to-word/">PDF to Word</Link></li>
@@ -132,7 +132,7 @@ export default function RootLayout({ children }) {
               </div>
 
               {/* Column 3: Media & Utility Tools */}
-              <div className="footer-col">
+              <div className="footer-col footer-col-media">
                 <h3 className="footer-col-title">Media & Utilities</h3>
                 <ul className="footer-links">
                   <li><Link href="/tools/image-compressor/">Image Compressor</Link></li>

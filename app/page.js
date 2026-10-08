@@ -47,7 +47,7 @@ export default function Home() {
 
         <div className="hero-cta-group">
           <a href="#tools-section" className="btn">
-            <span>Explore All 26+ Tools</span>
+            <span>Explore All 27+ Tools</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
             </svg>
