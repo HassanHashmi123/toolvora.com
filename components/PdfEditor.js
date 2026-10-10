@@ -125,7 +125,7 @@ function Editor({ sign }) {
     if (tool === 'sign' && sig) { const w = Math.min(160, vp.width * 0.4), h = w * sig.ratio; add({ type: 'sign', x: clamp(x - w / 2, 0, vp.width - w), y: clamp(y - h / 2, 0, vp.height - h), w, h, img: sig.url, ratio: sig.ratio }); }
   };
   const down = (e) => {
-    if (e.target !== ov.current || (tool !== 'white' && tool !== 'draw')) return;
+    if (!vp || e.target !== ov.current || (tool !== 'white' && tool !== 'draw')) return;
     const [x, y] = at(e, ov, vp); ov.current.setPointerCapture(e.pointerId);
     drag.current = { kind: tool, x, y, id: add(tool === 'white' ? { type: 'white', x, y, w: 0, h: 0 } : { type: 'draw', pts: [[x, y]], color, lw: 2 }) };
   };
@@ -238,10 +238,11 @@ export function CropPdf() {
   const ov = useRef(null), start = useRef(null);
   useEffect(() => { setBox(null); }, [files]);
   const frac = (e) => { const [x, y] = at(e, ov, vp); return [clamp(x / vp.width, 0, 1), clamp(y / vp.height, 0, 1)]; };
-  const down = (e) => { ov.current.setPointerCapture(e.pointerId); start.current = frac(e); setBox(null); };
-  const move = (e) => { if (!start.current) return; const [x, y] = frac(e), [sx, sy] = start.current; setBox({ x: Math.min(x, sx), y: Math.min(y, sy), w: Math.abs(x - sx), h: Math.abs(y - sy) }); };
+  // vp is missing until the first page has loaded
+  const down = (e) => { if (!vp) return; ov.current.setPointerCapture(e.pointerId); start.current = frac(e); setBox(null); };
+  const move = (e) => { if (!start.current || !vp) return; const [x, y] = frac(e), [sx, sy] = start.current; setBox({ x: Math.min(x, sx), y: Math.min(y, sy), w: Math.abs(x - sx), h: Math.abs(y - sy) }); };
   const [st, run] = useRun(async () => {
-    if (!box || box.w * vp.width < 10 || box.h * vp.height < 10) return { msg: 'Drag on the page to mark the area you want to keep.' };
+    if (!box || !vp || box.w * vp.width < 10 || box.h * vp.height < 10) return { msg: 'Drag on the page to mark the area you want to keep.' };
     const P = await lib('pdflib'); let doc;
     try { doc = await P.PDFDocument.load(await files[0].arrayBuffer()); } catch { return { msg: LOCKED }; }
     for (let n = 1; n <= pdf.numPages; n++) {

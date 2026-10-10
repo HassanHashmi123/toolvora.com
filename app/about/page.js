@@ -1,9 +1,13 @@
 import Link from 'next/link';
+import { og } from '../../lib/tools';
 
+const TITLE = 'About Us';
+const DESC = 'Who builds DocBrio, why the tools process files in your browser instead of uploading them, and how to reach Vibeans Solutions.';
 export const metadata = {
-  title: 'About DocBrio & Vibeans Solutions | Enterprise Document Engine',
-  description:
-    'Learn about DocBrio, the in browser document processing suite engineered by Vibeans Solutions (Top IT Company & AI Agency). Meet our developer Hassan Hashmi and CEO.',
+  title: TITLE,
+  description: DESC,
+  alternates: { canonical: '/about/' },
+  openGraph: og(TITLE, DESC, '/about/'),
 };
 
 export default function AboutPage() {
@@ -13,40 +17,40 @@ export default function AboutPage() {
         <div className="section-eyebrow">
           ENGINEERED BY VIBEANS SOLUTIONS
         </div>
-        <h1 style={{ fontSize: 'clamp(24px, 4.5vw, 32px)' }}>Empowering Document Privacy with In Browser Computing</h1>
+        <h1 style={{ fontSize: 'clamp(24px, 4.5vw, 32px)' }}>About DocBrio</h1>
         <p className="sub" style={{ fontSize: '16px' }}>
-          DocBrio was conceived and built by <b>Vibeans Solutions</b> to solve a pervasive digital dilemma: why should you hand over private documents, confidential contracts, and personal identities to third party cloud servers just to convert or edit them?
+          DocBrio was built by <b>Vibeans Solutions</b> around one question: why should you have to upload a private document to somebody else&apos;s server just to convert or edit it?
         </p>
 
         <div className="about-pillars-grid">
           <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--line)', padding: '20px', borderRadius: '12px' }}>
             <div style={{ fontSize: '24px', marginBottom: 8 }}>🔒</div>
-            <b style={{ color: '#fff', fontSize: '16px', display: 'block', marginBottom: 4 }}>100% Local Processing</b>
+            <b style={{ color: '#fff', fontSize: '16px', display: 'block', marginBottom: 4 }}>Processing in Your Browser</b>
             <p style={{ color: 'var(--ink-muted)', fontSize: '13.5px', margin: 0 }}>
-              All parsing, rendering, and file encoding happens inside your browser using WebAssembly. Nothing is ever sent across the wire.
+              Reading, converting and saving happen inside your browser, so your files are not uploaded. One tool is different: the Email Verifier looks up a domain name through public DNS.
             </p>
           </div>
 
           <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--line)', padding: '20px', borderRadius: '12px' }}>
             <div style={{ fontSize: '24px', marginBottom: 8 }}>⚡</div>
-            <b style={{ color: '#fff', fontSize: '16px', display: 'block', marginBottom: 4 }}>Sub Second Latency</b>
+            <b style={{ color: '#fff', fontSize: '16px', display: 'block', marginBottom: 4 }}>No Upload Wait</b>
             <p style={{ color: 'var(--ink-muted)', fontSize: '13.5px', margin: 0 }}>
-              Eliminating the cloud upload and download bottleneck means conversions execute immediately against your local machine.
+              With no upload and no download from a server, the speed depends on your device and the size of the file.
             </p>
           </div>
 
           <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--line)', padding: '20px', borderRadius: '12px' }}>
             <div style={{ fontSize: '24px', marginBottom: 8 }}>💎</div>
-            <b style={{ color: '#fff', fontSize: '16px', display: 'block', marginBottom: 4 }}>Forever Free & Clean</b>
+            <b style={{ color: '#fff', fontSize: '16px', display: 'block', marginBottom: 4 }}>Free to Use</b>
             <p style={{ color: 'var(--ink-muted)', fontSize: '13.5px', margin: 0 }}>
-              No subscriptions, no artificial page limits, and zero watermark injections. High quality tools built for everyday productivity.
+              No subscription, no signup and no watermark. The site is meant to be paid for by advertising.
             </p>
           </div>
         </div>
 
         <h2 style={{ fontSize: '24px', marginTop: 36 }}>Leadership & Engineering Team</h2>
         <p style={{ color: 'var(--ink-secondary)', marginBottom: 20 }}>
-          Meet the minds behind DocBrio&apos;s architecture and Vibeans Solutions&apos; product division:
+          The people behind DocBrio:
         </p>
 
         <div className="team-grid" style={{ margin: '0 0 36px' }}>
@@ -59,7 +63,7 @@ export default function AboutPage() {
               </div>
             </div>
             <p>
-              Specializing in full stack web architectures, client side Wasm systems, and cognitive UX design. Architected DocBrio&apos;s core file processing pipeline.
+              Full stack web developer. Designed and built the DocBrio tools.
             </p>
             <a
               href="https://www.linkedin.com/in/hassan-hashmi-266b032a4/"
@@ -83,7 +87,7 @@ export default function AboutPage() {
               </div>
             </div>
             <p>
-              Leading Vibeans Solutions into the future of enterprise software, bespoke AI integrations, and high impact digital consulting for international enterprises.
+              Leads Vibeans Solutions and its work in web software, AI integrations and consulting.
             </p>
             <a
               href="https://www.linkedin.com/in/code-with-deved/"
@@ -115,7 +119,7 @@ export default function AboutPage() {
             </div>
           </div>
           <p style={{ color: 'var(--ink-secondary)' }}>
-            <b>Vibeans Solutions</b> is a premier software development house & AI agency recognized for crafting scalable enterprise applications, modern SaaS platforms, and intelligent machine learning solutions.
+            <b>Vibeans Solutions</b> is a software development company that builds web applications, SaaS products and AI integrations for its clients.
           </p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
             <a

@@ -16,8 +16,8 @@ export default function ContactClient() {
   const whatsappLink = 'https://wa.me/923711191446';
   const agencyUrl = 'https://www.vibeanssolutions.site/';
 
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(officialEmail);
+  const handleCopyEmail = async () => {
+    try { await navigator.clipboard.writeText(officialEmail); } catch { return; }
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
   };
@@ -42,7 +42,7 @@ export default function ContactClient() {
   const topics = [
     'Technical Support',
     'Bug Report',
-    'Enterprise Software',
+    'Custom Software',
     'Feature Request',
     'Partnership',
   ];
@@ -67,7 +67,7 @@ export default function ContactClient() {
           </div>
 
           <p className="contact-card-desc">
-            Direct inbox for business partnerships, enterprise software consulting, security disclosures, and formal requests.
+            Email for partnerships, software consulting, security reports and formal requests.
           </p>
 
           <div className="contact-email-box">
@@ -170,7 +170,7 @@ export default function ContactClient() {
           </div>
 
           <p className="contact-card-desc">
-            Explore our elite engineering services: custom enterprise web apps, high throughput WebAssembly software, and modern AI platforms.
+            See the services of Vibeans Solutions: web applications, browser based software and AI integrations.
           </p>
 
           <div className="contact-tagline-box">
@@ -347,7 +347,7 @@ export default function ContactClient() {
               </div>
             </div>
             <p className="leader-desc">
-              Directing strategic innovation, AI software consulting, and enterprise application delivery across Vibeans Solutions.
+              Leads strategy, AI consulting and project delivery at Vibeans Solutions.
             </p>
             <a
               href="https://www.linkedin.com/in/code-with-deved/"
@@ -382,7 +382,7 @@ export default function ContactClient() {
               </div>
             </div>
             <p className="leader-desc">
-              Premier IT consultancy and artificial intelligence software engineering firm serving global enterprises.
+              Software development and AI consulting company.
             </p>
             <a
               href="https://www.linkedin.com/company/vibeanssolutions"

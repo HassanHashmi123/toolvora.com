@@ -4,7 +4,7 @@ export const dynamic = 'force-static';
 // Route handler instead of app/sitemap.js: Next 14 dev server 500s on sitemap.js with output: 'export'
 export function GET() {
   const pages = [
-    '', 'blog/', 'about/', 'contact/', 'privacy-policy/', 'terms/',
+    '', 'tools/', 'blog/', 'about/', 'contact/', 'privacy-policy/', 'terms/',
     ...tools.map((t) => `tools/${t.slug}/`),
     ...posts.map((p) => `blog/${p.slug}/`),
   ];

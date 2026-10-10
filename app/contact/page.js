@@ -1,9 +1,12 @@
+import { og } from '../../lib/tools';
 import ContactClient from '../../components/ContactClient';
 
+const DESC = 'Contact the DocBrio team at Vibeans Solutions for support, bug reports, feature requests or a software project.';
 export const metadata = {
-  title: 'Contact Engineering & Vibeans Solutions',
-  description:
-    'Get in touch with the DocBrio development team and Vibeans Solutions for support, feature requests, partnership, or custom enterprise software development.',
+  title: 'Contact',
+  description: DESC,
+  alternates: { canonical: '/contact/' },
+  openGraph: og('Contact', DESC, '/contact/'),
 };
 
 export default function ContactPage() {
@@ -12,7 +15,7 @@ export default function ContactPage() {
       <div className="contact-page-header">
         <h1 className="contact-hero-title">Get in Touch with Our Team</h1>
         <p className="contact-hero-sub">
-          Have feedback on a document tool, found a bug, or looking to architect custom enterprise software with <b>Vibeans Solutions</b>? We respond promptly across all official channels.
+          Have feedback on a document tool, found a bug, or want to discuss a software project with <b>Vibeans Solutions</b>? Use any of the channels below.
         </p>
 
         <div className="contact-trust-row">

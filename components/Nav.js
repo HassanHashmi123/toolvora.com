@@ -272,7 +272,7 @@ export default function Nav() {
               <div className="mega-bottom-bar">
                 <div className="mega-bottom-info">
                   <span className="dot-pulse" />
-                  <span>27+ In Browser Tools • 100% Client Side Privacy • Zero Server Uploads</span>
+                  <span>27 tools that run in your browser • Files are not uploaded</span>
                 </div>
                 <Link
                   href="/#tools-section"
@@ -331,7 +331,7 @@ export default function Nav() {
 
         <Link
           href="/contact/"
-          className={`saas-nav-link ${path === '/contact/' ? 'active' : ''}`}
+          className={`saas-nav-link ${path.startsWith('/contact') ? 'active' : ''}`}
         >
           Contact
         </Link>
@@ -402,7 +402,7 @@ export default function Nav() {
             <div className="mobile-drawer-header">
               <div className="mobile-drawer-brand">
                 <div className="mobile-drawer-title">Browse DocBrio Suite</div>
-                <div className="mobile-drawer-subtitle">27 Tools • 100% Client Side Privacy</div>
+                <div className="mobile-drawer-subtitle">27 tools • Files stay on your device</div>
               </div>
               <button
                 type="button"

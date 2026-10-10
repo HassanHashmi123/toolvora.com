@@ -1,8 +1,11 @@
-import Link from 'next/link';
+import { og } from '../../lib/tools';
 
+const DESC = 'Terms of service and acceptable use for the DocBrio document and image tools.';
 export const metadata = {
-  title: 'Terms of Service | DocBrio by Vibeans Solutions',
-  description: 'Terms of service and acceptable use guidelines for the DocBrio document productivity suite.',
+  title: 'Terms of Service',
+  description: DESC,
+  alternates: { canonical: '/terms/' },
+  openGraph: og('Terms of Service', DESC, '/terms/'),
 };
 
 export default function Page() {
@@ -19,17 +22,17 @@ export default function Page() {
 
         <h2>2. Permitted Use</h2>
         <p>
-          DocBrio tools are provided for lawful, productive purposes. You may use our tools for personal, educational, and commercial document tasks. Because all operations execute locally on your device, you remain solely responsible for the content and legality of the documents you process.
+          DocBrio tools are provided for lawful, productive purposes. You may use our tools for personal, educational, and commercial document tasks. Because your files are processed on your own device, you remain responsible for the content and legality of the documents you process.
         </p>
 
         <h2>3. Disclaimer of Warranties</h2>
         <p>
-          DocBrio is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, whether express or implied. While we strive for high conversion fidelity and numerical precision across all formats, we recommend always retaining original backup copies of your files.
+          DocBrio is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, whether express or implied. We work to make conversions accurate, but results can contain errors. Check every result before you rely on it, and keep the original copies of your files.
         </p>
 
         <h2>4. Intellectual Property</h2>
         <p>
-          DocBrio, its design system, code, and branding are the intellectual property of <b>Vibeans Solutions</b>. Your files and converted output remain 100% your exclusive property at all times.
+          DocBrio, its design system, code, and branding are the intellectual property of <b>Vibeans Solutions</b>. Your files and the results you create with the tools remain yours.
         </p>
       </div>
     </>

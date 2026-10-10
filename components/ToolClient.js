@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { lib, mk, base, esc, useRun, Drop, Out, NOTE, openPdf } from './shared';
+import { lib, mk, base, esc, copyText, useRun, Drop, Out, NOTE, openPdf } from './shared';
 import { PptToPdf, PdfToPpt } from './Slides';
 import { EditPdf, SignPdf, CropPdf } from './PdfEditor';
 import { ImgConvert } from './ImageConvert';
@@ -189,7 +189,10 @@ function QrGen() {
   const gen = async () => {
     if (!t.trim()) return setErr('Type a link or some text first.');
     setErr('');
-    try { const q = (await lib('qr'))(0, 'M'); q.addData(unescape(encodeURIComponent(t.trim()))); q.make(); setUrl(q.createDataURL(8, 4)); }
+    try { const q = (await lib('qr'))(0, 'M'); q.addData(unescape(encodeURIComponent(t.trim()))); q.make();
+      const im = new Image(); im.src = q.createDataURL(8, 4); await im.decode();
+      const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; c.getContext('2d').drawImage(im, 0, 0);
+      setUrl(c.toDataURL('image/png')); }
     catch (e) { setUrl(''); setErr(/internet/.test(e.message) ? e.message : 'This text is too long for a QR code. Use a shorter link or text.'); }
   };
   return <><input type="text" value={t} onChange={(e) => setT(e.target.value)} placeholder="https://example.com" aria-label="Link or text" /><button className="btn" onClick={gen}>Generate QR</button>
@@ -199,7 +202,8 @@ function QrGen() {
 
 function WordCounter() {
   const [v, setV] = useState(''); const t = v.trim(); const w = t ? t.split(/\s+/).length : 0;
-  const s = t ? (t.match(/([.!?\u06D4]+|\n+)/g) || [t]).length : 0;
+  // Count the pieces between sentence endings, so the last sentence counts even without a full stop
+  const s = t.split(/[.!?\u06D4\n]+/).filter((x) => x.trim()).length;
   return <><textarea value={v} onChange={(e) => setV(e.target.value)} placeholder="Paste or type your text here..." aria-label="Text" />
     <div className="stats"><div><b>{w}</b>Words</div><div><b>{v.length}</b>Characters</div><div><b>{s}</b>Sentences</div><div><b>{w ? Math.max(1, Math.round(w / 200)) : 0}</b>Min read</div></div></>;
 }
@@ -210,12 +214,12 @@ function CaseConverter() {
   const f = {
     u: (s) => s.toUpperCase(),
     l: (s) => s.toLowerCase(),
-    t: (s) => s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()),
-    s: (s) => s.toLowerCase().replace(/(^\s*|[.!?\n]\s*)([a-z])/g, (a, b, c) => b + c.toUpperCase())
+    // Only the first letter of each word: \b\w also hit the letter after an apostrophe (don't -> Don'T) and skipped accented letters
+    t: (s) => s.toLowerCase().replace(/[\p{L}\p{N}]+(?:['’]\p{L}+)*/gu, (w) => w[0].toUpperCase() + w.slice(1)),
+    s: (s) => s.toLowerCase().replace(/(^\s*|[.!?\n]\s*)(\p{L})/gu, (a, b, c) => b + c.toUpperCase())
   };
-  const copy = () => {
-    if (!v) return;
-    navigator.clipboard.writeText(v);
+  const copy = async () => {
+    if (!v || !(await copyText(v))) return;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -231,14 +235,15 @@ function PasswordGen() {
     let s = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
     if (num) s += '23456789';
     if (sym) s += '!@#$%^&*+=?';
-    const r = new Uint32Array(len);
-    crypto.getRandomValues(r);
-    setPw([...r].map((n) => s[n % s.length]).join(''));
+    // Values above the last full multiple of s.length are thrown away, so every character is equally likely
+    const max = Math.floor(2 ** 32 / s.length) * s.length, r = new Uint32Array(1);
+    let out = '';
+    while (out.length < len) { crypto.getRandomValues(r); if (r[0] < max) out += s[r[0] % s.length]; }
+    setPw(out);
   };
   useEffect(() => { gen(); }, []);
-  const copy = () => {
-    if (!pw) return;
-    navigator.clipboard.writeText(pw);
+  const copy = async () => {
+    if (!pw || !(await copyText(pw))) return;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

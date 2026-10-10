@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { copyText } from './shared';
 
 // Common disposable / burner email domains
 const DISPOSABLE_DOMAINS = new Set([
@@ -253,7 +254,7 @@ function identifyProvider(domain, mxRecords = []) {
   };
 }
 
-// Live DNS-over-HTTPS MX Query (100% In Browser Client Query)
+// MX lookup over DNS-over-HTTPS. This sends the domain (never the part before the @) to Google, then Cloudflare as a fallback
 async function fetchMxRecords(domain) {
   try {
     const googleUrl = `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`;
@@ -314,9 +315,8 @@ export default function EmailVerifier() {
   const [result, setResult] = useState(null);
   const [copiedKey, setCopiedKey] = useState(null);
 
-  const handleCopy = (text, key) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
+  const handleCopy = async (text, key) => {
+    if (!text || !(await copyText(text))) return;
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
   };
@@ -382,9 +382,9 @@ export default function EmailVerifier() {
 
     let overallStatus = 'verified';
     let deliverabilityScore = 98;
-    let badgeText = 'Verified and Reachable';
+    let badgeText = 'Format Valid, Domain Accepts Mail';
     let badgeClass = 'ev-badge-verified';
-    let summaryVerdict = 'This email address is verified, active, and reachable.';
+    let summaryVerdict = 'The address is correctly written and its domain has mail servers. This does not prove that this exact mailbox exists.';
 
     if (dnsRes.status === 'nxdomain') {
       overallStatus = 'invalid';
@@ -403,18 +403,19 @@ export default function EmailVerifier() {
       deliverabilityScore = 35;
       badgeText = 'Disposable Burner Mailbox';
       badgeClass = 'ev-badge-risky';
-      summaryVerdict = 'This email belongs to a temporary throwaway service. Messages will self destruct.';
+      summaryVerdict = 'This domain belongs to a disposable mail service. Mail sent there is usually deleted after a short time.';
+    } else if (dnsRes.status === 'network_blocked') {
+      // Checked before the role branch: without a DNS answer nothing can be called reachable
+      overallStatus = 'verified';
+      deliverabilityScore = 50;
+      badgeText = 'Format Valid, Domain Not Checked';
+      badgeClass = 'ev-badge-verified';
+      summaryVerdict = 'The format is valid, but the mail servers of the domain could not be looked up from your network.';
     } else if (nameData.isRole) {
       deliverabilityScore = 96;
-      badgeText = 'Verified and Reachable';
+      badgeText = 'Format Valid, Domain Accepts Mail';
       badgeClass = 'ev-badge-verified';
-      summaryVerdict = 'This corporate department email is verified, active, and reachable.';
-    } else if (dnsRes.status === 'network_blocked') {
-      overallStatus = 'verified';
-      deliverabilityScore = 90;
-      badgeText = 'Syntax and Format Verified';
-      badgeClass = 'ev-badge-verified';
-      summaryVerdict = 'Email syntax and domain format are valid and properly formed.';
+      summaryVerdict = 'This looks like a shared role address, and its domain has mail servers. This does not prove that the mailbox exists.';
     }
 
     setResult({
@@ -446,6 +447,8 @@ export default function EmailVerifier() {
       {/* Sleek Minimalist Search Bar */}
       <form
         className="ev-form-bar"
+        // The tool does its own checking: the browser's check would block the button for exactly the addresses it should report as invalid
+        noValidate
         onSubmit={(e) => {
           e.preventDefault();
           handleVerify();
@@ -555,7 +558,7 @@ export default function EmailVerifier() {
             <div className="ev-score-badge-card">
               <div className="ev-score-top">
                 <span className="ev-score-pct">{result.deliverabilityScore}%</span>
-                <span className="ev-score-sub">Deliverable</span>
+                <span className="ev-score-sub">Estimate</span>
               </div>
               <div className="ev-score-track">
                 <div

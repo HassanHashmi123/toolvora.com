@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { posts } from '../../lib/posts';
-import { getTool } from '../../lib/tools';
+import { getTool, og } from '../../lib/tools';
 
+const TITLE = 'Guides and Document Tutorials';
+const DESC = 'Step by step guides with worked examples: converting PDFs, shrinking images, choosing an image format, signing documents and staying safe online.';
 export const metadata = {
-  title: 'Guides & Document Tutorials | DocBrio by Vibeans Solutions',
-  description:
-    'Simple, actionable step by step guides on converting PDFs, compressing images, merging documents and staying secure online without uploading files.',
+  title: TITLE,
+  description: DESC,
   alternates: { canonical: '/blog/' },
+  openGraph: og(TITLE, DESC, '/blog/'),
 };
 
 export default function Blog() {
@@ -14,10 +16,10 @@ export default function Blog() {
     <>
       <div className="hero" style={{ padding: '24px 0 20px', textAlign: 'center' }}>
         <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, marginBottom: 12, letterSpacing: '-0.02em' }}>
-          Practical Guides & Document Tutorials
+          Practical Guides and Document Tutorials
         </h1>
         <p style={{ maxWidth: '680px', margin: '0 auto', fontSize: '15.5px', color: 'var(--ink-secondary)', lineHeight: 1.6 }}>
-          Expert tips, format breakdowns, and step by step walkthroughs for all 26 document, office, and image utilities.
+          {posts.length} guides with worked examples, common mistakes and checklists for the document, office and image tools.
         </p>
       </div>
 

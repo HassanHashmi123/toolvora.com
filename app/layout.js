@@ -8,23 +8,21 @@ import ScrollControls from '../components/ScrollControls';
 export const metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: 'DocBrio by Vibeans Solutions | Free Online PDF, Office & Image Suite',
-    template: '%s | DocBrio by Vibeans Solutions',
+    default: 'Free PDF, Office and Image Tools in Your Browser | DocBrio',
+    template: '%s | DocBrio',
   },
   description:
-    'Free enterprise grade online tools: PDF to Word, PDF to Excel, Word to PDF, Merge PDF, Edit PDF, Compress Images, QR codes and more. 100% in browser processing with zero server uploads.',
+    'Free online tools for PDF, Word, Excel, PowerPoint and images: convert, merge, edit, sign and compress. Files are processed in your browser, not uploaded.',
+  // app/favicon.ico gets its <link> automatically; listing it here too duplicated the tag
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: '16x16', type: 'image/x-icon' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-    ],
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
     apple: '/icon.svg',
   },
   openGraph: {
-    title: 'DocBrio by Vibeans Solutions | Free Online PDF & Document Suite',
-    description: '100% in browser file conversion and PDF tools. Fast, private, zero server logs.',
+    title: 'Free PDF, Office and Image Tools in Your Browser | DocBrio',
+    description: 'Free online tools for PDF, Word, Excel, PowerPoint and images: convert, merge, edit, sign and compress. Files are processed in your browser, not uploaded.',
     url: SITE,
-    siteName: 'DocBrio by Vibeans Solutions',
+    siteName: 'DocBrio',
     type: 'website',
   },
 };
@@ -72,7 +70,7 @@ export default function RootLayout({ children }) {
                   <DocBrioLogo size={30} showWordmark={true} />
                 </Link>
                 <p className="footer-brand-desc">
-                  DocBrio is a high performance in browser document processing suite engineered by <b>Vibeans Solutions</b>. All computations execute inside client side memory with zero server uploads.
+                  DocBrio is a set of free document and image tools built by <b>Vibeans Solutions</b>. Your files are processed in your browser and are not uploaded.
                 </p>
                 <div className="footer-accreditation-card">
                   <div className="accreditation-header">
@@ -165,7 +163,7 @@ export default function RootLayout({ children }) {
                   </div>
                 </div>
                 <p className="footer-agency-desc">
-                  Partner with our engineering team for enterprise AI, bespoke web apps, and modern SaaS architecture.
+                  Vibeans Solutions builds web apps, AI integrations and SaaS products. Get in touch about your project.
                 </p>
 
                 <div className="footer-contact-actions">

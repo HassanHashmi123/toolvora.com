@@ -28,6 +28,8 @@ export function lib(name) {
 export const mk = (blob, name) => ({ url: URL.createObjectURL(blob), name });
 export const base = (f) => f.name.replace(/\.[^.]+$/, '');
 export const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// The clipboard is missing on http pages and can be refused by the browser. Resolves to whether the text was copied
+export const copyText = async (text) => { try { await navigator.clipboard.writeText(text); return true; } catch { return false; } };
 
 export function formatBytes(bytes) {
   if (!bytes || bytes <= 0) return '0 B';
@@ -40,7 +42,7 @@ export function formatBytes(bytes) {
 export function useRun(fn) {
   const [st, setSt] = useState({});
   const run = async () => {
-    setSt({ msg: 'Processing locally in browser memory...', loading: true });
+    setSt({ msg: 'Working in your browser...', loading: true });
     try {
       const res = await fn((msg) => setSt({ msg, loading: true }));
       setSt({ ...res, loading: false });
@@ -167,7 +169,7 @@ export const NOTE = (t) => (
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
       <div>
-        <b style={{ color: '#fff', display: 'block', marginBottom: 2 }}>100% Client Side Privacy Guarantee</b>
+        <b style={{ color: '#fff', display: 'block', marginBottom: 2 }}>Processed in Your Browser</b>
         <span>{t}</span>
       </div>
     </div>

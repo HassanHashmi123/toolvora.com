@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { tools, getTool } from '../../../lib/tools';
+import { tools, getTool, og } from '../../../lib/tools';
+import { getPost } from '../../../lib/posts';
 import ToolClient from '../../../components/ToolClient';
 
 export function generateStaticParams() {
@@ -11,13 +12,10 @@ export function generateMetadata({ params }) {
   const t = getTool(params.slug);
   if (!t) return {};
   return {
-    title: `${t.name} | Free Online Tool by Vibeans Solutions`,
+    title: t.title,
     description: t.desc,
     alternates: { canonical: `/tools/${t.slug}/` },
-    openGraph: {
-      title: `${t.name} | Free Online Tool | DocBrio by Vibeans Solutions`,
-      description: t.desc,
-    },
+    openGraph: og(t.title, t.desc, `/tools/${t.slug}/`),
   };
 }
 
@@ -25,6 +23,13 @@ export function generateMetadata({ params }) {
 function getRecommendations(currentTool) {
   const slug = currentTool.slug;
   const cat = currentTool.cat;
+
+  // The tools a page links to in its own text come first, then others of the same kind
+  if (currentTool.links) {
+    const own = currentTool.links.map(([s]) => getTool(s)).filter(Boolean);
+    const rest = tools.filter((x) => x.cat === cat && x.slug !== slug && !own.includes(x));
+    return [...own, ...rest].slice(0, 4);
+  }
 
   // Handcrafted curated matches for top tools
   const curatedMap = {
@@ -62,6 +67,10 @@ export default function ToolPage({ params }) {
   if (!t) notFound();
 
   const recommendedTools = getRecommendations(t);
+  const about = [].concat(t.about);
+  const guide = t.guide && getPost(t.guide[0]);
+  // The Email Verifier looks up the domain through public DNS, so it does not get the "nothing leaves your browser" wording
+  const dns = t.slug === 'email-verifier';
 
   const ld = {
     '@context': 'https://schema.org',
@@ -88,7 +97,7 @@ export default function ToolPage({ params }) {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
-                In Browser Client Sandbox • Zero Server Upload
+                {dns ? 'Runs in your browser • The domain is looked up through public DNS' : 'Runs in your browser • Your files are not uploaded'}
               </span>
             </div>
           </div>
@@ -106,10 +115,10 @@ export default function ToolPage({ params }) {
       <div className="panel info" style={{ marginTop: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <h2 style={{ margin: 0, fontSize: '20px' }}>You Might Also Like</h2>
-          <span style={{ fontSize: '12.5px', color: 'var(--ink-muted)' }}>Curated for your workflow</span>
+          <span style={{ fontSize: '12.5px', color: 'var(--ink-muted)' }}>Related tools</span>
         </div>
         <p style={{ color: 'var(--ink-muted)', fontSize: '14px', marginBottom: 18 }}>
-          Discover complementary tools engineered by Vibeans Solutions to accelerate your document tasks.
+          Other DocBrio tools that are often used together with {t.name}.
         </p>
 
         <div className="related-grid">
@@ -142,9 +151,9 @@ export default function ToolPage({ params }) {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           </div>
-          <b>Zero Data Retention</b>
+          <b>{dns ? 'What Leaves Your Browser' : 'Files Stay on Your Device'}</b>
           <span style={{ WebkitLineClamp: 3 }}>
-            Files are processed strictly in your local device RAM. No server transmission or persistent cache exists.
+            {dns ? 'Only the domain after the @ sign is sent, to a public DNS service. DocBrio does not store the address.' : 'The work is done by your browser. Your file is not sent to DocBrio or to any other server.'}
           </span>
         </div>
 
@@ -154,9 +163,9 @@ export default function ToolPage({ params }) {
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
           </div>
-          <b>Instant Execution</b>
+          <b>No Upload Wait</b>
           <span style={{ WebkitLineClamp: 3 }}>
-            Powered by modern WebAssembly and canvas rendering, eliminating internet upload wait times.
+            Nothing has to be uploaded or downloaded again, so speed depends on your device and the size of the file.
           </span>
         </div>
 
@@ -167,9 +176,9 @@ export default function ToolPage({ params }) {
               <polyline points="12 6 12 12 14 14" />
             </svg>
           </div>
-          <b>Enterprise Quality</b>
+          <b>Free, No Signup</b>
           <span style={{ WebkitLineClamp: 3 }}>
-            Architected and maintained by Vibeans Solutions for seamless cross platform desktop & mobile use.
+            No account and no watermark. Works in current browsers on phones, tablets and computers.
           </span>
         </div>
       </div>
@@ -177,7 +186,16 @@ export default function ToolPage({ params }) {
       {/* Comprehensive Documentation, How-To, and FAQs */}
       <div className="panel info">
         <h2>About {t.name}</h2>
-        <p>{t.about}</p>
+        {about.map((p) => (
+          <p key={p}>{p}</p>
+        ))}
+
+        {t.when && (
+          <>
+            <h2>When Should I Use This?</h2>
+            <p>{t.when}</p>
+          </>
+        )}
 
         <h2>How to Use {t.name} Step by Step</h2>
         <ol style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', color: 'var(--ink-secondary)', marginTop: '10px' }}>
@@ -187,6 +205,31 @@ export default function ToolPage({ params }) {
             </li>
           ))}
         </ol>
+
+        {t.limits && (
+          <>
+            <h2>Limitations</h2>
+            <p>{t.limits}</p>
+          </>
+        )}
+
+        {t.links && (
+          <>
+            <h2>Related Tools and Guide</h2>
+            <ul style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', color: 'var(--ink-secondary)', marginTop: '10px' }}>
+              {t.links.map(([slug, why]) => (
+                <li key={slug} style={{ paddingLeft: '6px' }}>
+                  <Link href={`/tools/${slug}/`}>{getTool(slug).name}</Link> {why}.
+                </li>
+              ))}
+              {guide && (
+                <li style={{ paddingLeft: '6px' }}>
+                  Guide: <Link href={`/blog/${guide.slug}/`}>{t.guide[1]}</Link>.
+                </li>
+              )}
+            </ul>
+          </>
+        )}
 
         <h2>Frequently Asked Questions</h2>
         {t.faq.map(([q, a]) => (
@@ -198,7 +241,7 @@ export default function ToolPage({ params }) {
 
         <div style={{ borderTop: '1px solid var(--line)', marginTop: '24px', paddingTop: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <span style={{ fontSize: '13px', color: 'var(--ink-muted)' }}>
-            Engineered by <b>Vibeans Solutions</b>
+            Built by <b>Vibeans Solutions</b>
           </span>
           <Link href="/" className="btn alt" style={{ margin: 0, padding: '7px 14px', fontSize: '13px' }}>
             ← Back to All Tools

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { posts, getPost } from '../../../lib/posts';
-import { getTool, SITE } from '../../../lib/tools';
+import { getTool, SITE, og } from '../../../lib/tools';
 import PostBody from '../../../components/PostBody';
 
 export function generateStaticParams() {
@@ -12,9 +12,10 @@ export function generateMetadata({ params }) {
   const p = getPost(params.slug);
   if (!p) return {};
   return {
-    title: `${p.title} | DocBrio Guides by Vibeans Solutions`,
+    title: p.title,
     description: p.desc,
     alternates: { canonical: `/blog/${p.slug}/` },
+    openGraph: og(p.title, p.desc, `/blog/${p.slug}/`, 'article'),
   };
 }
 
@@ -28,6 +29,7 @@ export default function Post({ params }) {
     headline: p.title,
     description: p.desc,
     datePublished: p.date,
+    dateModified: p.updated || p.date,
     mainEntityOfPage: `${SITE}/blog/${p.slug}/`,
     author: {
       '@type': 'Organization',
@@ -43,7 +45,7 @@ export default function Post({ params }) {
           <span className="article-tag">
             Tutorial
           </span>
-          <span style={{ fontSize: '13px', color: 'var(--ink-muted)' }}>Document Workflow Guide • By Vibeans Engineering</span>
+          <span style={{ fontSize: '13px', color: 'var(--ink-muted)' }}>Guide by Vibeans Solutions{p.updated ? ` • Updated ${p.updated}` : ''}</span>
         </div>
 
         <h1 style={{ fontSize: 'clamp(24px, 3.5vw, 36px)', lineHeight: 1.25, marginBottom: 14 }}>
@@ -72,7 +74,7 @@ export default function Post({ params }) {
             <div>
               <b style={{ color: '#fff', fontSize: '15px', display: 'block' }}>Try the Free In Browser Tool:</b>
               <span style={{ fontSize: '13.5px', color: 'var(--ink-secondary)' }}>
-                {t.name} • No signup required, 100% private.
+                {t.name} • No signup required. Runs in your browser.
               </span>
             </div>
             <Link href={`/tools/${t.slug}/`} className="btn" style={{ margin: 0, padding: '8px 18px', fontSize: '13.5px' }}>

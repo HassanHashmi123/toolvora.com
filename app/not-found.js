@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: '404: Page Not Found | DocBrio by Vibeans Solutions',
+  title: '404: Page Not Found',
   description: 'The requested tool or page was not found.',
 };
 
