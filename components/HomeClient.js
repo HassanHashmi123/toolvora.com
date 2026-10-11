@@ -234,7 +234,7 @@ export default function HomeClient({ tools }) {
           id="global-tool-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search 27+ tools (e.g. Email Verifier, PDF to Word, Compress, WebP, Sign...)"
+          placeholder={`Search ${tools.length} tools (e.g. Email Verifier, PDF to Word, Compress, WebP, Sign...)`}
           className="search-input"
           aria-label="Search tools"
           autoComplete="off"

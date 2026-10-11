@@ -1,6 +1,6 @@
 import './globals.css';
 import Link from 'next/link';
-import { SITE } from '../lib/tools';
+import { SITE, tools } from '../lib/tools';
 import Nav from '../components/Nav';
 import DocBrioLogo from '../components/DocBrioLogo';
 import ScrollControls from '../components/ScrollControls';
@@ -55,7 +55,7 @@ export default function RootLayout({ children }) {
               <DocBrioLogo size={36} showWordmark={true} />
             </Link>
 
-            <Nav />
+            <Nav count={tools.length} />
           </div>
         </header>
 

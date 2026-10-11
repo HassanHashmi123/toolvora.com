@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-export default function Nav() {
+export default function Nav({ count }) {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState('manage');
@@ -165,6 +165,8 @@ export default function Nav() {
         { name: 'PDF to Excel', slug: 'pdf-to-excel', desc: 'Extract PDF tables to .xlsx sheets' },
         { name: 'PowerPoint to PDF', slug: 'powerpoint-to-pdf', desc: 'Turn .pptx slides into PDF' },
         { name: 'PDF to PowerPoint', slug: 'pdf-to-powerpoint', desc: 'Export PDF pages to .pptx slides' },
+        { name: 'JPG to PDF', slug: 'jpg-to-pdf', desc: 'Combine photos into one PDF' },
+        { name: 'PDF to JPG', slug: 'pdf-to-jpg', desc: 'Save PDF pages as JPG pictures' },
       ],
     },
     {
@@ -272,14 +274,14 @@ export default function Nav() {
               <div className="mega-bottom-bar">
                 <div className="mega-bottom-info">
                   <span className="dot-pulse" />
-                  <span>27 tools that run in your browser • Files are not uploaded</span>
+                  <span>{count} tools that run in your browser • Files are not uploaded</span>
                 </div>
                 <Link
                   href="/#tools-section"
                   className="mega-all-link"
                   onClick={(e) => handleNavScroll(e, 'tools-section')}
                 >
-                  <span>View All 27 Tools Directory</span>
+                  <span>View All {count} Tools Directory</span>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
@@ -402,7 +404,7 @@ export default function Nav() {
             <div className="mobile-drawer-header">
               <div className="mobile-drawer-brand">
                 <div className="mobile-drawer-title">Browse DocBrio Suite</div>
-                <div className="mobile-drawer-subtitle">27 tools • Files stay on your device</div>
+                <div className="mobile-drawer-subtitle">{count} tools • Files stay on your device</div>
               </div>
               <button
                 type="button"
@@ -480,7 +482,7 @@ export default function Nav() {
                 <div className="mobile-section-label">Site Navigation</div>
                 <Link href="/#tools-section" onClick={(e) => handleNavScroll(e, 'tools-section')}>
                   <span>All Tools Directory</span>
-                  <span className="mobile-link-badge">27 Tools</span>
+                  <span className="mobile-link-badge">{count} Tools</span>
                 </Link>
                 <Link href="/#how-it-works" onClick={(e) => handleNavScroll(e, 'how-it-works')}>
                   <span>How It Works</span>
