@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { tools, BRAND } from '../lib/tools';
+import { tools, soon, BRAND } from '../lib/tools';
 import HomeClient from '../components/HomeClient';
 
 export const metadata = {
@@ -93,7 +93,7 @@ export default function Home() {
       </section>
 
       {/* Interactive Tools Search & Category Filter Section */}
-      <HomeClient tools={tools} />
+      <HomeClient tools={[...tools, ...soon]} />
 
       {/* 3 Step Interactive Workflow */}
       <section id="how-it-works" style={{ margin: '60px 0 40px', scrollMarginTop: '90px' }}>

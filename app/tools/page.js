@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { tools, og } from '../../lib/tools';
+import { tools, soon, og } from '../../lib/tools';
 
 const TITLE = 'All Tools';
 const DESC = 'Every DocBrio tool on one page: PDF tools, document converters, image converters, generators and text tools. Free, with no signup.';
@@ -50,6 +50,24 @@ export default function ToolsIndex() {
           </div>
         </section>
       ))}
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: 14 }}>Coming Soon</h2>
+        <div className="related-grid">
+          {soon.map((t) => (
+            <Link key={t.slug} href={`/tools/${t.slug}/`} className="related-card">
+              <div className={`badge ${t.cls}`} style={{ width: 34, height: 34, fontSize: 11, borderRadius: 8 }}>
+                {t.badge}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
+                <div style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 400 }}>Not available yet</div>
+              </div>
+              <span className="soon-tag">Soon</span>
+            </Link>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

@@ -108,15 +108,17 @@ export default function HomeClient({ tools }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Tools marked soon are shown with a tag but are not counted
+  const live = tools.filter((t) => !t.soon).length;
   const featuredSlugs = ['pdf-to-word', 'edit-pdf', 'image-compressor', 'sign-pdf', 'word-to-pdf', 'merge-pdf'];
 
   const categoriesList = useMemo(() => {
     return [
-      { id: 'All', label: `All ${tools.length} Tools`, count: tools.length },
+      { id: 'All', label: `All ${live} Tools`, count: live },
       ...CATEGORY_ORDER.map((c) => ({
         id: c,
         label: CATEGORY_META[c].tabLabel,
-        count: tools.filter((t) => t.cat === c).length,
+        count: tools.filter((t) => t.cat === c && !t.soon).length,
       })),
     ];
   }, [tools]);
@@ -141,6 +143,7 @@ export default function HomeClient({ tools }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <b>{t.name}</b>
+            {t.soon && <span className="soon-tag">Soon</span>}
             {isFeatured && (
               <span
                 style={{
@@ -161,7 +164,7 @@ export default function HomeClient({ tools }) {
           </div>
           <span>{t.sub}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 10, fontSize: '12px', color: 'var(--vibeans-blue-light)', fontWeight: 600 }}>
-            <span>Launch Tool</span>
+            <span>{t.soon ? 'Coming Soon' : 'Launch Tool'}</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
@@ -192,7 +195,7 @@ export default function HomeClient({ tools }) {
                   className="category-count-badge"
                   style={{ color: meta.color, background: meta.bg, border: `1px solid ${meta.border}` }}
                 >
-                  {catTools.length} Tools
+                  {catTools.filter((t) => !t.soon).length} Tools
                 </span>
               </div>
               <p className="category-section-desc">{meta.desc}</p>
@@ -234,7 +237,7 @@ export default function HomeClient({ tools }) {
           id="global-tool-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={`Search ${tools.length} tools (e.g. Email Verifier, PDF to Word, Compress, WebP, Sign...)`}
+          placeholder={`Search ${live} tools (e.g. Email Verifier, PDF to Word, Compress, WebP, Sign...)`}
           className="search-input"
           aria-label="Search tools"
           autoComplete="off"
@@ -298,7 +301,7 @@ export default function HomeClient({ tools }) {
                   setActiveCat('All');
                 }}
               >
-                View All {tools.length} Tools
+                View All {live} Tools
               </button>
             </div>
           ) : (

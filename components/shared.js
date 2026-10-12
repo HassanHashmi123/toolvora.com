@@ -11,6 +11,7 @@ const LIBS = {
   qr: [CDN + 'qrcode-generator/1.4.4/qrcode.min.js', 'qrcode'],
   jszip: [CDN + 'jszip/3.10.1/jszip.min.js', 'JSZip'],
   pptx: ['https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js', 'PptxGenJS'],
+  ort: ['https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js', 'ort'],
   tesseract: ['https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js', 'Tesseract'],
 };
 const pending = {};

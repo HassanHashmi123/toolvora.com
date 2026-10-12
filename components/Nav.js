@@ -167,6 +167,7 @@ export default function Nav({ count }) {
         { name: 'PDF to PowerPoint', slug: 'pdf-to-powerpoint', desc: 'Export PDF pages to .pptx slides' },
         { name: 'JPG to PDF', slug: 'jpg-to-pdf', desc: 'Combine photos into one PDF' },
         { name: 'PDF to JPG', slug: 'pdf-to-jpg', desc: 'Save PDF pages as JPG pictures' },
+        { name: 'MP4 to MP3', slug: 'mp4-to-mp3', desc: 'Coming soon' },
       ],
     },
     {
@@ -183,11 +184,14 @@ export default function Nav({ count }) {
       ),
       items: [
         { name: 'Image Compressor', slug: 'image-compressor', desc: 'Reduce JPG & PNG size with preview' },
+        { name: 'Background Remover', slug: 'background-remover', desc: 'Cut out the subject of a photo' },
+        { name: 'Object Remover', slug: 'object-remover', desc: 'Erase small unwanted things' },
         { name: 'PNG to WebP', slug: 'png-to-webp', desc: 'Ultra small modern web images' },
         { name: 'WebP to JPG', slug: 'webp-to-jpg', desc: 'Universal device compatibility' },
         { name: 'JPG to PNG', slug: 'jpg-to-png', desc: 'Lossless format conversion' },
         { name: 'PNG to ICO', slug: 'png-to-ico', desc: 'Generate multi size favicons' },
         { name: 'AVIF to PNG', slug: 'avif-to-png', desc: 'Convert next gen AVIF to PNG' },
+        { name: 'Image to Text', slug: 'image-to-text', desc: 'Coming soon' },
       ],
     },
     {
@@ -207,6 +211,7 @@ export default function Nav({ count }) {
         { name: 'Email Verifier', slug: 'email-verifier', desc: 'Verify email, extract name & domain' },
         { name: 'Word Counter', slug: 'word-counter', desc: 'Words, characters & reading time' },
         { name: 'Case Converter', slug: 'case-converter', desc: 'Uppercase, lowercase, title case' },
+        { name: 'Short to Long Description', slug: 'short-to-long-description', desc: 'Coming soon' },
       ],
     },
   ];

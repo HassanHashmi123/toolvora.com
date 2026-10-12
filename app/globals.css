@@ -2080,6 +2080,41 @@ textarea {
   border-radius: 6px;
   padding: 4px;
 }
+.ie-check {
+  margin-top: 14px;
+  line-height: 0;
+  border: 1px solid var(--line-highlight);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: repeating-conic-gradient(#d9dde5 0 25%, #fff 0 50%) 0 0/20px 20px;
+}
+.ie-check img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.pe-stage .ie-marks {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  opacity: 0.55;
+  cursor: crosshair;
+  touch-action: none;
+}
+.soon-tag {
+  display: inline-block;
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255, 122, 0, 0.15);
+  color: var(--vibeans-orange);
+  border: 1px solid rgba(255, 122, 0, 0.3);
+}
 .ic-list {
   list-style: none;
   margin: 16px 0 0;

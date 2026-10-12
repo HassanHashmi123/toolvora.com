@@ -5,6 +5,7 @@ import { PptToPdf, PdfToPpt } from './Slides';
 import { EditPdf, SignPdf, CropPdf } from './PdfEditor';
 import { ImgConvert } from './ImageConvert';
 import { JpgToPdf, PdfToJpg } from './PdfImages';
+import { BgRemover, ObjectRemover } from './ImageEdit';
 import EmailVerifier from './EmailVerifier';
 
 // items: { s, x, y, w } in PDF points (y grows upwards) -> lines of items, top to bottom, left to right
@@ -256,7 +257,7 @@ function PasswordGen() {
 
 const MAP = { 'pdf-to-word': PdfToWord, 'pdf-to-excel': PdfToExcel, 'word-to-pdf': WordToPdf, 'merge-pdf': MergePdf,
   'image-compressor': ImageCompressor, 'qr-code-generator': QrGen, 'word-counter': WordCounter, 'case-converter': CaseConverter, 'password-generator': PasswordGen,
-  'powerpoint-to-pdf': PptToPdf, 'pdf-to-powerpoint': PdfToPpt, 'edit-pdf': EditPdf, 'sign-pdf': SignPdf, 'crop-pdf': CropPdf, 'email-verifier': EmailVerifier, 'jpg-to-pdf': JpgToPdf, 'pdf-to-jpg': PdfToJpg };
+  'powerpoint-to-pdf': PptToPdf, 'pdf-to-powerpoint': PdfToPpt, 'edit-pdf': EditPdf, 'sign-pdf': SignPdf, 'crop-pdf': CropPdf, 'email-verifier': EmailVerifier, 'jpg-to-pdf': JpgToPdf, 'pdf-to-jpg': PdfToJpg, 'background-remover': BgRemover, 'object-remover': ObjectRemover };
 const IMG = /^(png|jpg|webp|avif|ico)-to-(png|jpg|webp|avif|ico)$/;
 export default function ToolClient({ slug }) {
   const m = IMG.exec(slug); if (m) return <ImgConvert from={m[1]} to={m[2]} />;

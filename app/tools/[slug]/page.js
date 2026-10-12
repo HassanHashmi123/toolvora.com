@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { tools, getTool, og } from '../../../lib/tools';
+import { tools, soon, getTool, og } from '../../../lib/tools';
 import { getPost } from '../../../lib/posts';
 import ToolClient from '../../../components/ToolClient';
 
 export function generateStaticParams() {
-  return tools.map((t) => ({ slug: t.slug }));
+  return [...tools, ...soon].map((t) => ({ slug: t.slug }));
 }
 
 export function generateMetadata({ params }) {
@@ -16,6 +16,8 @@ export function generateMetadata({ params }) {
     description: t.desc,
     alternates: { canonical: `/tools/${t.slug}/` },
     openGraph: og(t.title, t.desc, `/tools/${t.slug}/`),
+    // A page without a working tool should not be in search results
+    ...(t.soon && { robots: { index: false, follow: true } }),
   };
 }
 
@@ -62,9 +64,36 @@ function getRecommendations(currentTool) {
   return [...sameCat, ...others].slice(0, 4);
 }
 
+function ComingSoon({ t }) {
+  return (
+    <div className="panel" style={{ borderTop: '3px solid var(--vibeans-orange)', textAlign: 'center', padding: '48px 24px' }}>
+      <div className={`badge ${t.cls}`} style={{ width: 56, height: 56, fontSize: 14, margin: '0 auto 18px' }}>{t.badge}</div>
+      <span className="soon-tag">Coming Soon</span>
+      <h1 style={{ margin: '14px 0 10px', fontSize: 'clamp(24px, 5vw, 34px)' }}>{t.name}</h1>
+      <p style={{ maxWidth: 560, margin: '0 auto', color: 'var(--ink-secondary)', lineHeight: 1.7 }}>
+        We are still building this tool, so it cannot be used yet. {t.plan}
+      </p>
+      <p style={{ margin: '26px 0 14px', color: 'var(--ink-muted)', fontSize: 14 }}>Tools you can use today:</p>
+      <div className="related-grid" style={{ textAlign: 'left' }}>
+        {t.links.map((s) => getTool(s)).map((rec) => (
+          <Link key={rec.slug} href={`/tools/${rec.slug}/`} className="related-card">
+            <div className={`badge ${rec.cls}`} style={{ width: 34, height: 34, fontSize: 11, borderRadius: 8 }}>{rec.badge}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{rec.name}</div>
+              <div style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 400 }}>{rec.cat} Tool</div>
+            </div>
+          </Link>
+        ))}
+      </div>
+      <Link href="/tools/" className="btn" style={{ marginTop: 26 }}>See All Tools</Link>
+    </div>
+  );
+}
+
 export default function ToolPage({ params }) {
   const t = getTool(params.slug);
   if (!t) notFound();
+  if (t.soon) return <ComingSoon t={t} />;
 
   const recommendedTools = getRecommendations(t);
   const about = [].concat(t.about);
